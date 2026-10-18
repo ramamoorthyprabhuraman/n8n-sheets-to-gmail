@@ -1,0 +1,137 @@
+{
+  "name": "Google sheets to Gmail",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2d127e2d-fae6-42d8-a566-9cd5f7461cfe",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "18pOj0M4xwkmvG2FoQ1awZ6kzR2qV-SGf1bTcH86psb4",
+          "mode": "list",
+          "cachedResultName": "Course Status",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18pOj0M4xwkmvG2FoQ1awZ6kzR2qV-SGf1bTcH86psb4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18pOj0M4xwkmvG2FoQ1awZ6kzR2qV-SGf1bTcH86psb4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        160,
+        0
+      ],
+      "id": "31563323-156c-4d1e-89a0-9f0076327401",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PPjdISPYlhqtZelj",
+          "name": "ramamoorthyprabhuraman"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(item => item.json);\n\n// Empty sheet: stop here so no blank email is sent\nif (rows.length === 0) {\n  return [];\n}\n\nconst lines = rows.map((r, i) => {\n  const name = r.Name || r.name || '-';\n  const course = r.Course || r.course || '-';\n  const status = r.Status || r.status || '-';\n  return `${i + 1}. Name: ${name} | Course: ${course} | Status: ${status}`;\n});\n\nconst body = [\n  'Hi,',\n  '',\n  `Here is the latest data from the sheet (${rows.length} records):`,\n  '',\n  ...lines,\n  '',\n  'Regards,',\n  'Your Automation Bot'\n].join('\\n');\n\nreturn [{ json: { subject: 'Data Summary from Google Sheet', body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "605e5656-d4b9-4244-a816-ac09353ce6ed",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhuraman@live.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "988dddf2-fe2f-4403-a34f-a3c327f018a4",
+      "name": "Send a message",
+      "webhookId": "5e909928-2c8d-43f4-9675-39c3fb87947c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Qyy4ypjeoASga4X7",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "f909d809-7566-4507-a6e2-202179487f03",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d99342036cceb63358c3775d5eacbe8372af90f47c0da973fadc80bff4ee0056"
+  },
+  "nodeGroups": [],
+  "id": "oDroDqkAVEnW75DY",
+  "tags": []
+}
